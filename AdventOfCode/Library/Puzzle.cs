@@ -1,4 +1,4 @@
-using System.Net;
+using AdventOfCode.Library.Utilities;
 
 namespace AdventOfCode.Library;
 
@@ -27,14 +27,6 @@ public abstract class Puzzle<T> where T : class
 
 
     public abstract Task<T> ParseInputData();
-
-    public virtual string SolvePart1(T parsedInput)
-    {
-        return "Not implemented";
-    }
-
-    public virtual string SolvePart2(T parsedInput)
-    {
-        return "Not implemented";
-    }
+    public virtual long SolvePart1(T parsedInput) => 0;
+    public virtual long SolvePart2(T parsedInput) => 0;
 }

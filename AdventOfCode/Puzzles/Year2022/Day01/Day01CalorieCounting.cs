@@ -4,7 +4,7 @@ namespace AdventOfCode.Puzzles.Year2022.Day01;
 
 public class Day01CalorieCounting : Puzzle<List<Elf>>
 {
-    public Day01CalorieCounting(bool exampleMode = false) : base(2022, 1, exampleMode)
+    public Day01CalorieCounting(bool example = false) : base(2022, 1, example)
     {
     }
 
@@ -33,18 +33,18 @@ public class Day01CalorieCounting : Puzzle<List<Elf>>
         return elves;
     }
 
-    public override string SolvePart1(List<Elf> elves)
+    public override long SolvePart1(List<Elf> elves)
     {
-        var largest = elves.MaxBy(elf => elf.Calories.Sum());
-        return largest?.Calories.Sum() + "";
+        var largest = elves.MaxBy(elf => elf.Calories.Sum()) ?? throw new Exception("No elf found...");
+        return largest.Calories.Sum();
     }
 
-    public override string SolvePart2(List<Elf> elves)
+    public override long SolvePart2(List<Elf> elves)
     {
         var top3 = elves.OrderByDescending(elf => elf.Calories.Sum())
             .ToList()
             .GetRange(0, Math.Min(elves.Count, 3));
 
-        return top3.Sum(elf => elf.Calories.Sum()) + "";
+        return top3.Sum(elf => elf.Calories.Sum());
     }
 }

@@ -4,7 +4,7 @@ namespace AdventOfCode.Puzzles.Year2022.Day02;
 
 public class Day02RockPaperScissors : Puzzle<List<string[]>>
 {
-    public Day02RockPaperScissors(bool exampleMode = false) : base(2022, 2, exampleMode)
+    public Day02RockPaperScissors(bool example = false) : base(2022, 2, example)
     {
     }
 
@@ -59,7 +59,7 @@ public class Day02RockPaperScissors : Puzzle<List<string[]>>
         return RoundResult.Win;
     }
 
-    public override string SolvePart1(List<string[]> parsedInput)
+    public override long SolvePart1(List<string[]> parsedInput)
         => parsedInput.Sum(round =>
             Scores[round[1] switch
             {
@@ -78,13 +78,13 @@ public class Day02RockPaperScissors : Puzzle<List<string[]>>
                     RoundResult.Win => 6,
                     _ => throw new ArgumentOutOfRangeException()
                 }
-        ) + "";
+        );
     
-    public override string SolvePart2(List<string[]> parsedInput)
+    public override long SolvePart2(List<string[]> parsedInput)
         => parsedInput.Where(round => round[1] == "X")
                .Sum(round => Scores[Strategies[round[0]].GetCounterLoss()])
            + parsedInput.Where(round => round[1] == "Y")
                .Sum(round => Scores[Strategies[round[0]]] + 3)
            + parsedInput.Where(round => round[1] == "Z")
-               .Sum(round => Scores[Strategies[round[0]].GetCounterWin()] + 6) + "";
+               .Sum(round => Scores[Strategies[round[0]].GetCounterWin()] + 6);
 }

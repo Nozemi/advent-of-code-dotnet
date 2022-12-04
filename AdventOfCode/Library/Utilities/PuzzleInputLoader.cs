@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace AdventOfCode.Library;
+namespace AdventOfCode.Library.Utilities;
 
 public static class PuzzleInputLoader
 {
