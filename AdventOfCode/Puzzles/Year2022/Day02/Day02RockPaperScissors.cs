@@ -1,12 +1,16 @@
 using AdventOfCode.Library;
+using Microsoft.Extensions.Configuration;
 
 namespace AdventOfCode.Puzzles.Year2022.Day02;
 
-public class Day02RockPaperScissors : Puzzle<List<string[]>>
+public class Day02RockPaperScissors : Puzzle
 {
-    public Day02RockPaperScissors(bool example = false) : base(2022, 2, example)
+    public Day02RockPaperScissors(IConfiguration config) : base(config)
     {
     }
+    
+    public override int Year() => 2022;
+    public override int Day() => 2;
 
     private static readonly Dictionary<string, Strategy> Strategies = new()
     {
@@ -39,11 +43,11 @@ public class Day02RockPaperScissors : Puzzle<List<string[]>>
         Draw
     }
 
-    public override async Task<List<string[]>> ParseInputData()
-        => (await RawInput()).Select(round => round.Split(" "))
+    private async Task<List<string[]>> ParseInputData(bool exampleData = false)
+        => (await RawInput(exampleData)).Select(round => round.Split(" "))
             .ToList();
 
-    private RoundResult GetResultOfRound(IReadOnlyList<string> round)
+    private static RoundResult GetResultOfRound(IReadOnlyList<string> round)
     {
         var opponentStrategy = Strategies[round[0]];
         var myStrategy = Strategies[round[1]];
@@ -59,8 +63,8 @@ public class Day02RockPaperScissors : Puzzle<List<string[]>>
         return RoundResult.Win;
     }
 
-    public override long SolvePart1(List<string[]> parsedInput)
-        => parsedInput.Sum(round =>
+    public override async Task<long> SolvePart1(bool exampleData = false)
+        => (await ParseInputData(exampleData)).Sum(round =>
             Scores[round[1] switch
             {
                 "X" => Strategy.Rock,
@@ -79,12 +83,16 @@ public class Day02RockPaperScissors : Puzzle<List<string[]>>
                     _ => throw new ArgumentOutOfRangeException()
                 }
         );
-    
-    public override long SolvePart2(List<string[]> parsedInput)
-        => parsedInput.Where(round => round[1] == "X")
-               .Sum(round => Scores[Strategies[round[0]].GetCounterLoss()])
-           + parsedInput.Where(round => round[1] == "Y")
-               .Sum(round => Scores[Strategies[round[0]]] + 3)
-           + parsedInput.Where(round => round[1] == "Z")
-               .Sum(round => Scores[Strategies[round[0]].GetCounterWin()] + 6);
+
+    public override async Task<long> SolvePart2(bool exampleData = false)
+    {
+        var parsedInput = await ParseInputData(exampleData);
+
+        return parsedInput.Where(round => round[1] == "X")
+                   .Sum(round => Scores[Strategies[round[0]].GetCounterLoss()])
+               + parsedInput.Where(round => round[1] == "Y")
+                   .Sum(round => Scores[Strategies[round[0]]] + 3)
+               + parsedInput.Where(round => round[1] == "Z")
+                   .Sum(round => Scores[Strategies[round[0]].GetCounterWin()] + 6);
+    }
 }

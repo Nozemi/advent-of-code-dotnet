@@ -6,5 +6,6 @@
             "Microsoft": "Information"
         }
     },
-    "AoCToken": "<INSERT_AOC_TOKEN>"
+    "AoCToken": "<INSERT_AOC_TOKEN>",
+    "DownloadInput": true
 }

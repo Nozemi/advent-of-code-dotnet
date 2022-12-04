@@ -1,24 +1,30 @@
 ﻿using AdventOfCode.Library;
 using AdventOfCode.Library.Extensions;
+using Microsoft.Extensions.Configuration;
 
 namespace AdventOfCode.Puzzles.Year2022.Day03;
 
-public class Day03RucksackReorganization : Puzzle<List<Rucksack>>
+public class Day03RucksackReorganization : Puzzle
 {
-    public Day03RucksackReorganization(bool example = false) : base(2022, 3, example)
+    public Day03RucksackReorganization(IConfiguration config) : base(config)
     {
     }
+    
+    public override int Year() => 2022;
+    public override int Day() => 3;
 
-    public override async Task<List<Rucksack>> ParseInputData()
-        => (await RawInput()).Select(line => new Rucksack(line)).ToList();
+    private async Task<List<Rucksack>> ParseInputData(bool exampleData = false)
+        => (await RawInput(exampleData))
+            .Select(line => new Rucksack(line))
+            .ToList();
 
-    public override long SolvePart1(List<Rucksack> parsedInput)
-        => parsedInput.Select(rucksack =>
+    public override async Task<long> SolvePart1(bool exampleData = false)
+        => (await ParseInputData(exampleData)).Select(rucksack =>
             rucksack.Compartments[0].Intersect(rucksack.Compartments[1])
         ).Sum(duplicate => duplicate.Sum());
 
-    public override long SolvePart2(List<Rucksack> parsedInput)
-        => parsedInput.ToGroupsOfSize(3).Select(group =>
+    public override async Task<long> SolvePart2(bool exampleData = false)
+        => (await ParseInputData(exampleData)).ToGroupsOfSize(3).Select(group =>
         {
             var result = new List<int>();
             group.ForEach(elf =>

@@ -1,30 +1,60 @@
 ﻿using AdventOfCode.Library;
-using AdventOfCode.Puzzles.Year2022.Day01;
-using AdventOfCode.Puzzles.Year2022.Day02;
-using AdventOfCode.Puzzles.Year2022.Day03;
-using AdventOfCode.Puzzles.Year2022.Day04;
+using AdventOfCode.Library.Extensions;
+using AdventOfCode.Library.Utilities;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
 
-var example1 = new Day01CalorieCounting(true);
-var actual1 = new Day01CalorieCounting();
-Console.WriteLine($"== Solving {actual1.GetType().Name} ==");
-Console.WriteLine($"Part 1: {actual1.SolvePart1(await actual1.ParseInputData())} | (Example: {example1.SolvePart1(await example1.ParseInputData())})");
-Console.WriteLine($"Part 2: {actual1.SolvePart2(await actual1.ParseInputData())} | (Example: {example1.SolvePart2(await example1.ParseInputData())})");
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .CreateLogger();
 
-var example2 = new Day02RockPaperScissors(true);
-var actual2 = new Day02RockPaperScissors();
-Console.WriteLine($"== Solving {actual2.GetType().Name} ==");
-Console.WriteLine($"Part 1: {actual2.SolvePart1(await actual2.ParseInputData())} | (Example: {example2.SolvePart1(await example2.ParseInputData())})");
-Console.WriteLine($"Part 2: {actual2.SolvePart2(await actual2.ParseInputData())} | (Example: {example2.SolvePart2(await example2.ParseInputData())})");
+var builder = Host.CreateDefaultBuilder(args)
+    .ConfigureHostConfiguration(config =>
+        config.SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false)
+    )
+    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+    .ConfigureContainer<ContainerBuilder>(container =>
+    {
+        container.RegisterAssemblyTypes(typeof(IPuzzle).Assembly).As<IPuzzle>();
+    })
+    .UseSerilog();
 
-var example3 = new Day03RucksackReorganization(true);
-var actual3 = new Day03RucksackReorganization();
-Console.WriteLine($"== Solving {actual3.GetType().Name} ==");
-Console.WriteLine($"Part 1: {actual3.SolvePart1(await actual3.ParseInputData())} | (Example: {example3.SolvePart1(await example3.ParseInputData())})");
-Console.WriteLine($"Part 2: {actual3.SolvePart2(await actual3.ParseInputData())} | (Example: {example3.SolvePart2(await example3.ParseInputData())})");
+var app = builder.Build();
 
-var example4 = new Day04CampCleanup(true);
-var actual4 = new Day04CampCleanup();
+var puzzles = app.Services
+    .GetServices<IPuzzle>()
+    .OrderBy(service => service.GetType().Name);
 
-Console.WriteLine($"== Solving {actual4.GetType().Name} ==");
-Console.WriteLine($"Part 1: {actual4.SolvePart1(await actual4.ParseInputData())} | (Example: {example4.SolvePart1(await example4.ParseInputData())})");
-Console.WriteLine($"Part 2: {actual4.SolvePart2(await actual4.ParseInputData())} | (Example: {example4.SolvePart2(await example4.ParseInputData())})");
+foreach (var puzzle in puzzles)
+{
+    var config = app.Services.GetService<IConfiguration>();
+    if (config != null && bool.Parse(config["DownloadInput"] ?? "false") && config["AoCToken"] != null)
+    {
+        await PuzzleInputLoader.DownloadInput(puzzle.Year(), puzzle.Day(), config["AoCToken"]!, puzzle.InputFile());
+    }
+
+    long? part1 = null;
+    long? part2 = null;
+    if (!(await puzzle.RawInput()).IsEmpty())
+    {
+        part1 = await puzzle.SolvePart1();
+        part2 = await puzzle.SolvePart2();
+    }
+    long? part1Example = null;
+    long? part2Example = null;
+    if (!(await puzzle.RawInput(true)).IsEmpty())
+    {
+        part1Example = await puzzle.SolvePart1(true);
+        part2Example = await puzzle.SolvePart2(true);
+    }
+    
+    Log.Information("== Solving {Name} ==", puzzle.GetType().Name);
+    Log.Information("Part 1: {Answer} (Example: {ExampleAnswer})", part1, part1Example);
+    Log.Information("Part 2: {Result} (Example: {ExampleAnswer})", part2, part2Example);
+}

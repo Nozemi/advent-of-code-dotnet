@@ -1,32 +1,57 @@
 using AdventOfCode.Library.Utilities;
+using Microsoft.Extensions.Configuration;
+using Serilog;
+using static AdventOfCode.Library.Utilities.PuzzleInputLoader;
 
 namespace AdventOfCode.Library;
 
-public abstract class Puzzle<T> where T : class
+public interface IPuzzle
 {
-    private readonly int _year;
-    private readonly int _day;
-    private readonly bool _exampleMode;
+    int Year();
+    int Day();
+    string InputFile(bool example = false);
+    Task<IEnumerable<string>> RawInput(bool exampleMode = false);
+    Task<long> SolvePart1(bool exampleData = false);
+    Task<long> SolvePart2(bool exampleData = false);
+}
 
-    protected Puzzle(int year, int day, bool exampleMode = false)
+public abstract class Puzzle : IPuzzle
+{
+    public abstract int Year();
+    public abstract int Day();
+    private readonly string _token;
+    private readonly bool _downloadInput;
+
+    protected Puzzle(IConfiguration config)
     {
-        _year = year;
-        _day = day;
-        _exampleMode = exampleMode;
+        _downloadInput = bool.Parse(config["DownloadInput"] ?? "false");
+        _token = config["AoCToken"] ?? throw new Exception("No AoC token was configured");
     }
 
-    public static string InputFile(int year, int day)
-        => $@"input/{year}/day{day}.txt";
+    public string InputFile(bool example = false)
+        => $@"input/{Year()}/day{Day()}{(example ? ".example" : "")}.txt";
 
-    protected async Task<IEnumerable<string>> RawInput()
-        => !_exampleMode
-            ? File.Exists(InputFile(_year, _day))
-                ? File.ReadLines(InputFile(_year, _day))
-                : await PuzzleInputLoader.DownloadInput(_year, _day)
-            : File.ReadLines($@"input/{_year}/day{_day}.example.txt");
+    public async Task<IEnumerable<string>> RawInput(bool exampleMode = false)
+    {
+        while (true)
+        {
+            if (File.Exists(InputFile(exampleMode)))
+                return File.ReadLines(InputFile(exampleMode));
 
+            if (exampleMode || !_downloadInput)
+                Log.Warning("Input file does not exist: {File}", InputFile(exampleMode));
 
-    public abstract Task<T> ParseInputData();
-    public virtual long SolvePart1(T parsedInput) => 0;
-    public virtual long SolvePart2(T parsedInput) => 0;
+            if (!_downloadInput)
+                return new List<string>();
+
+            if (await DownloadInput(Year(), Day(), _token, InputFile()))
+                continue;
+
+            Log.Error("Something went wrong downloading input: {Input}", InputFile());
+            return new List<string>();
+        }
+    }
+
+    public abstract Task<long> SolvePart1(bool exampleData = false);
+    public abstract Task<long> SolvePart2(bool exampleData = false);
 }

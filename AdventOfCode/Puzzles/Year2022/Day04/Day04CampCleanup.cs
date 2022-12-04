@@ -1,29 +1,32 @@
 ﻿using AdventOfCode.Library;
 using AdventOfCode.Library.Extensions;
-using AdventOfCode.Library.Utilities;
+using Microsoft.Extensions.Configuration;
 using static AdventOfCode.Library.Utilities.VariousUtilities;
 
 namespace AdventOfCode.Puzzles.Year2022.Day04;
 
-public class Day04CampCleanup : Puzzle<List<Elf[]>>
+public class Day04CampCleanup : Puzzle
 {
-    public Day04CampCleanup(bool exampleMode = false) : base(2022, 4, exampleMode)
+    public Day04CampCleanup(IConfiguration config) : base(config)
     {
     }
+    
+    public override int Year() => 2022;
+    public override int Day() => 4;
 
-    public override async Task<List<Elf[]>> ParseInputData()
-        => (await RawInput()).Select(group =>
+    private async Task<List<Elf[]>> ParseInputData(bool exampleData = false)
+        => (await RawInput(exampleData)).Select(group =>
             group.Split(",").Select(elf => new Elf(elf)).ToArray()
         ).ToList();
 
-    public override long SolvePart1(List<Elf[]> parsedInput)
-        => parsedInput.Count(group =>
+    public override async Task<long> SolvePart1(bool exampleData = false)
+        => (await ParseInputData(exampleData)).Count(group =>
             (group[0].LowestSection <= group[1].LowestSection && group[0].HighestSection >= group[1].HighestSection)
             || (group[1].LowestSection <= group[0].LowestSection && group[1].HighestSection >= group[0].HighestSection)
         );
 
-    public override long SolvePart2(List<Elf[]> parsedInput)
-        => parsedInput.Count(group =>
+    public override async Task<long> SolvePart2(bool exampleData = false)
+        => (await ParseInputData(exampleData)).Count(group =>
             !IntListFromRange(group[0].LowestSection, group[0].HighestSection)
                 .Intersect(IntListFromRange(group[1].LowestSection, group[1].HighestSection)).IsEmpty()
         );

@@ -1,16 +1,20 @@
 using AdventOfCode.Library;
+using Microsoft.Extensions.Configuration;
 
 namespace AdventOfCode.Puzzles.Year2022.Day01;
 
-public class Day01CalorieCounting : Puzzle<List<Elf>>
+public class Day01CalorieCounting : Puzzle
 {
-    public Day01CalorieCounting(bool example = false) : base(2022, 1, example)
+    public Day01CalorieCounting(IConfiguration config) : base(config)
     {
     }
+    
+    public override int Year() => 2022;
+    public override int Day() => 1;
 
-    public override async Task<List<Elf>> ParseInputData()
+    private async Task<List<Elf>> ParseInputData(bool exampleData = false)
     {
-        var rawInput = await RawInput();
+        var rawInput = await RawInput(exampleData);
         var elves = new List<Elf>();
         foreach (var line in rawInput)
         {
@@ -33,18 +37,17 @@ public class Day01CalorieCounting : Puzzle<List<Elf>>
         return elves;
     }
 
-    public override long SolvePart1(List<Elf> elves)
-    {
-        var largest = elves.MaxBy(elf => elf.Calories.Sum()) ?? throw new Exception("No elf found...");
-        return largest.Calories.Sum();
-    }
+    public override async Task<long> SolvePart1(bool exampleData = false)
+        => (await ParseInputData(exampleData)).MaxBy(elf => elf.Calories.Sum())?.Calories.Sum()
+           ?? throw new Exception("No elf found...");
 
-    public override long SolvePart2(List<Elf> elves)
+    public override async Task<long> SolvePart2(bool exampleData = false)
     {
-        var top3 = elves.OrderByDescending(elf => elf.Calories.Sum())
+        var data = await ParseInputData(exampleData);
+        
+        return data.OrderByDescending(elf => elf.Calories.Sum())
             .ToList()
-            .GetRange(0, Math.Min(elves.Count, 3));
-
-        return top3.Sum(elf => elf.Calories.Sum());
+            .GetRange(0, Math.Min(data.Count, 3))
+            .Sum(elf => elf.Calories.Sum());
     }
 }
