@@ -1,32 +1,24 @@
-using AdventOfCode.Library;
-using Microsoft.Extensions.Configuration;
+﻿using AdventOfCode.Library.Extensions;
+using AdventOfCode.Library.Puzzle;
 
 namespace AdventOfCode.Puzzles.Year2022.Day02;
 
 public class Day02RockPaperScissors : Puzzle
 {
-    public Day02RockPaperScissors(IConfiguration config) : base(config)
+    //private static readonly string[] Strategies = { "A", "B", "C" };
+
+    private static readonly Dictionary<string, int> ResultTranslations = new()
     {
-    }
-    
-    public override int Year() => 2022;
-    public override int Day() => 2;
+        { "X", -1 },
+        { "Y", 0 },
+        { "Z", 1 }
+    };
 
     private static readonly Dictionary<string, Strategy> Strategies = new()
     {
         { "A", Strategy.Rock },
         { "B", Strategy.Paper },
         { "C", Strategy.Scissors }
-    };
-
-    private static readonly Dictionary<Enum, int> Scores = new()
-    {
-        { Strategy.Rock, 1 },
-        { Strategy.Paper, 2 },
-        { Strategy.Scissors, 3 },
-        { RoundResult.Win, 6 },
-        { RoundResult.Draw, 3 },
-        { RoundResult.Loss, 0 }
     };
 
     public enum Strategy
@@ -42,10 +34,6 @@ public class Day02RockPaperScissors : Puzzle
         Loss,
         Draw
     }
-
-    private async Task<List<string[]>> ParseInputData(bool exampleData = false)
-        => (await RawInput(exampleData)).Select(round => round.Split(" "))
-            .ToList();
 
     private static RoundResult GetResultOfRound(IReadOnlyList<string> round)
     {
@@ -63,36 +51,74 @@ public class Day02RockPaperScissors : Puzzle
         return RoundResult.Win;
     }
 
-    public override async Task<long> SolvePart1(bool exampleData = false)
-        => (await ParseInputData(exampleData)).Sum(round =>
-            Scores[round[1] switch
-            {
-                "X" => Strategy.Rock,
-                "Y" => Strategy.Paper,
-                "Z" => Strategy.Scissors,
-                _ => throw new Exception($"Nope... {round[1]} is not valid...")
-            }] + GetResultOfRound(round.Select(r =>
-                    r.Replace("X", "A")
-                        .Replace("Y", "B")
-                        .Replace("Z", "C")
-                ).ToList()) switch
-                {
-                    RoundResult.Loss => 0,
-                    RoundResult.Draw => 3,
-                    RoundResult.Win => 6,
-                    _ => throw new ArgumentOutOfRangeException()
-                }
-        );
-
-    public override async Task<long> SolvePart2(bool exampleData = false)
+    private static readonly Dictionary<Enum, int> Scores = new()
     {
-        var parsedInput = await ParseInputData(exampleData);
+        { Strategy.Rock, 1 },
+        { Strategy.Paper, 2 },
+        { Strategy.Scissors, 3 },
+        { RoundResult.Win, 6 },
+        { RoundResult.Draw, 3 },
+        { RoundResult.Loss, 0 }
+    };
 
-        return parsedInput.Where(round => round[1] == "X")
-                   .Sum(round => Scores[Strategies[round[0]].GetCounterLoss()])
-               + parsedInput.Where(round => round[1] == "Y")
-                   .Sum(round => Scores[Strategies[round[0]]] + 3)
-               + parsedInput.Where(round => round[1] == "Z")
-                   .Sum(round => Scores[Strategies[round[0]].GetCounterWin()] + 6);
+    private static long Solution1(IEnumerable<string> rawInput)
+        => rawInput.Select(round => round.Split(" "))
+            .ToList().Sum(round =>
+                Scores[round[1] switch
+                {
+                    "X" => Strategy.Rock,
+                    "Y" => Strategy.Paper,
+                    "Z" => Strategy.Scissors,
+                    _ => throw new Exception($"Nope... {round[1]} is not valid...")
+                }] + GetResultOfRound(round.Select(r =>
+                        r.Replace("X", "A")
+                            .Replace("Y", "B")
+                            .Replace("Z", "C")
+                    ).ToList()) switch
+                    {
+                        RoundResult.Loss => 0,
+                        RoundResult.Draw => 3,
+                        RoundResult.Win => 6,
+                        _ => throw new ArgumentOutOfRangeException()
+                    }
+            );
+
+
+    private static long Solution2(IEnumerable<string> rawInput)
+    {
+        var score = 0;
+        foreach (var round in rawInput)
+        {
+            var parts = round.Split(" ");
+            var mine = parts[1];
+            var their = parts[0];
+
+            var neededOutcome = ResultTranslations[mine];
+
+            var mineIndex = Strategies.Keys.ToList().IndexOf(their) + neededOutcome;
+            if (mineIndex == -1)
+                mineIndex = Strategies.Keys.Count - 1;
+            if (mineIndex == Strategies.Keys.Count)
+                mineIndex = 0;
+
+            score += mineIndex + 1 + neededOutcome switch
+            {
+                -1 => 0,
+                0 => 3,
+                1 => 6,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        return score;
     }
+
+    public override int Year() => 2022;
+    public override int Day() => 2;
+
+    public override Dictionary<object, Func<IEnumerable<string>, long>> Solutions() => new()
+    {
+        { "Part 1", Solution1 },
+        { "Part 2", Solution2 }
+    };
 }

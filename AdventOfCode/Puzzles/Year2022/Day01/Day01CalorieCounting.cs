@@ -1,22 +1,39 @@
-using AdventOfCode.Library;
-using Microsoft.Extensions.Configuration;
+﻿using AdventOfCode.Library.Puzzle;
 
 namespace AdventOfCode.Puzzles.Year2022.Day01;
 
 public class Day01CalorieCounting : Puzzle
 {
-    public Day01CalorieCounting(IConfiguration config) : base(config)
+    private static long Solution1(IEnumerable<string> input)
+        => input.Parse().MaxBy(elf => elf.Calories.Sum())?.Calories.Sum()
+           ?? throw new Exception("No elf found...");
+
+    private static long Solution2(IEnumerable<string> input)
     {
+        var data = input.Parse();
+
+        return data.OrderByDescending(elf => elf.Calories.Sum())
+            .ToList()
+            .GetRange(0, Math.Min(data.Count, 3))
+            .Sum(elf => elf.Calories.Sum());
     }
-    
+
     public override int Year() => 2022;
     public override int Day() => 1;
 
-    private async Task<List<Elf>> ParseInputData(bool exampleData = false)
+    public override Dictionary<object, Func<IEnumerable<string>, long>> Solutions() => new()
     {
-        var rawInput = await RawInput(exampleData);
+        { "Part 1", Solution1 },
+        { "Part 2", Solution2 }
+    };
+}
+
+public static class StringEnumerableExtensions
+{
+    public static List<Elf> Parse(this IEnumerable<string> input)
+    {
         var elves = new List<Elf>();
-        foreach (var line in rawInput)
+        foreach (var line in input)
         {
             var id = elves.FindLast(elf => elf.Id > 0)?.Id ?? 0;
 
@@ -36,18 +53,15 @@ public class Day01CalorieCounting : Puzzle
 
         return elves;
     }
+}
 
-    public override async Task<long> SolvePart1(bool exampleData = false)
-        => (await ParseInputData(exampleData)).MaxBy(elf => elf.Calories.Sum())?.Calories.Sum()
-           ?? throw new Exception("No elf found...");
-
-    public override async Task<long> SolvePart2(bool exampleData = false)
+public class Elf
+{
+    public Elf(int id)
     {
-        var data = await ParseInputData(exampleData);
-        
-        return data.OrderByDescending(elf => elf.Calories.Sum())
-            .ToList()
-            .GetRange(0, Math.Min(data.Count, 3))
-            .Sum(elf => elf.Calories.Sum());
+        Id = id;
     }
+
+    public int Id { get; }
+    public List<int> Calories { get; } = new();
 }
