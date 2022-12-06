@@ -4,11 +4,11 @@ namespace AdventOfCode.Puzzles.Year2022.Day01;
 
 public class Day01CalorieCounting : Puzzle
 {
-    private static long Solution1(IEnumerable<string> input)
+    private static object Solution1(IEnumerable<string> input)
         => input.Parse().MaxBy(elf => elf.Calories.Sum())?.Calories.Sum()
            ?? throw new Exception("No elf found...");
 
-    private static long Solution2(IEnumerable<string> input)
+    private static object Solution2(IEnumerable<string> input)
     {
         var data = input.Parse();
 
@@ -21,7 +21,7 @@ public class Day01CalorieCounting : Puzzle
     public override int Year() => 2022;
     public override int Day() => 1;
 
-    public override Dictionary<object, Func<IEnumerable<string>, long>> Solutions() => new()
+    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
     {
         { "Part 1", Solution1 },
         { "Part 2", Solution2 }

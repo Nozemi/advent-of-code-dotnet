@@ -5,14 +5,14 @@ namespace AdventOfCode.Puzzles.Year2022.Day03;
 
 public class Day03RucksackReorganization : Puzzle
 {
-    private static long Solution1(IEnumerable<string> input)
+    private static object Solution1(IEnumerable<string> input)
         => input.Select(line => new Rucksack(line)).ToList()
             .Select(rucksack =>
                 rucksack.Compartments[0].Intersect(rucksack.Compartments[1])
             )
             .Sum(duplicate => duplicate.Sum());
 
-    private static long Solution2(IEnumerable<string> input)
+    private static object Solution2(IEnumerable<string> input)
         => input.Select(line => new Rucksack(line)).ToList().ToGroupsOfSize(3).Select(group =>
         {
             var result = new List<int>();
@@ -29,7 +29,7 @@ public class Day03RucksackReorganization : Puzzle
     public override int Year() => 2022;
     public override int Day() => 3;
 
-    public override Dictionary<object, Func<IEnumerable<string>, long>> Solutions() => new()
+    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
     {
         { "Part 1", Solution1 },
         { "Part 2", Solution2 }

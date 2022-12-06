@@ -6,8 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Exceptions;
 
 Log.Logger = new LoggerConfiguration()
+    .Enrich.WithExceptionDetails()
     .MinimumLevel.Debug()
     .WriteTo.Console()
     .CreateLogger();
@@ -27,4 +29,5 @@ var host = Host.CreateDefaultBuilder(args)
     .UseConsoleLifetime()
     .Build();
     
-host.Services.GetService<PuzzleSolver>()?.FindAndSolvePuzzles();
+host.Services.GetService<PuzzleSolver>()
+    ?.FindAndSolvePuzzles();

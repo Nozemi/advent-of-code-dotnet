@@ -1,4 +1,5 @@
-﻿using AdventOfCode.Library.Puzzle;
+﻿using AdventOfCode.Library.Extensions;
+using AdventOfCode.Library.Puzzle;
 using AdventOfCode.Library.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,19 +28,29 @@ public class PuzzleSolver
 
     private async void Callback(IPuzzle puzzle)
     {
+        if (_downloadInput)
+            await PuzzleInputLoader.DownloadExampleInput(puzzle.Year(), puzzle.Day(),
+                $"input/{puzzle.Year()}/day{puzzle.Day()}.example.txt");
+        
         if (!string.IsNullOrEmpty(_token) && _downloadInput)
             await PuzzleInputLoader.DownloadInput(puzzle.Year(), puzzle.Day(), _token,
                 $"input/{puzzle.Year()}/day{puzzle.Day()}.main.txt");
 
         var chars = "======================";
         for (var i = 0; i < puzzle.GetType().Name.Length; i++) chars += "=";
+        
+        var inputsDirectory = new DirectoryInfo($@"input\\{puzzle.Year()}");
+        var files = inputsDirectory.GetFiles($"day{puzzle.Day()}*.txt");
 
+        if (files.IsEmpty())
+            return;
+        
         Console.WriteLine();
         Log.Information("{Separator}", chars);
         Log.Information("=== Solutions for {Name} ===", puzzle.GetType().Name);
         Log.Information("{Separator}", chars);
-        var inputsDirectory = new DirectoryInfo($@"input\\{puzzle.Year()}");
-        foreach (var fileInfo in inputsDirectory.GetFiles($"day{puzzle.Day()}*.txt"))
+        
+        foreach (var fileInfo in files)
         {
             Log.Information("-- Solutions using input file: {File}", fileInfo.Name);
             foreach (var entry in puzzle.Solutions())

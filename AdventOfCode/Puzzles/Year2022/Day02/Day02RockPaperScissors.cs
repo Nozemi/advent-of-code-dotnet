@@ -61,7 +61,7 @@ public class Day02RockPaperScissors : Puzzle
         { RoundResult.Loss, 0 }
     };
 
-    private static long Solution1(IEnumerable<string> rawInput)
+    private static object Solution1(IEnumerable<string> rawInput)
         => rawInput.Select(round => round.Split(" "))
             .ToList().Sum(round =>
                 Scores[round[1] switch
@@ -84,7 +84,7 @@ public class Day02RockPaperScissors : Puzzle
             );
 
 
-    private static long Solution2(IEnumerable<string> rawInput)
+    private static object Solution2(IEnumerable<string> rawInput)
     {
         var score = 0;
         foreach (var round in rawInput)
@@ -116,7 +116,7 @@ public class Day02RockPaperScissors : Puzzle
     public override int Year() => 2022;
     public override int Day() => 2;
 
-    public override Dictionary<object, Func<IEnumerable<string>, long>> Solutions() => new()
+    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
     {
         { "Part 1", Solution1 },
         { "Part 2", Solution2 }
