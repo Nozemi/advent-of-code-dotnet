@@ -12,6 +12,9 @@ public class PuzzleSolver
     private readonly List<IPuzzle> _puzzles;
     private readonly bool _downloadInput;
     private readonly string _token;
+    private readonly bool _downloadExampleInput;
+    private readonly List<int>? _daysToRun;
+    private readonly List<string>? _inputsToRun;
 
     public PuzzleSolver(IServiceProvider provider, IConfiguration configuration)
     {
@@ -21,6 +24,10 @@ public class PuzzleSolver
 
         _token = configuration["AoCToken"] ?? "";
         _downloadInput = bool.Parse(configuration["DownloadInput"] ?? "false");
+        _downloadExampleInput = bool.Parse(configuration["DownloadExampleInput"] ?? "true");
+
+        _daysToRun = configuration.GetSection("DaysToRun").Get<List<int>>();
+        _inputsToRun = configuration.GetSection("InputsToRun").Get<List<string>>();
     }
 
     public void FindAndSolvePuzzles()
@@ -28,6 +35,12 @@ public class PuzzleSolver
 
     private async void Callback(IPuzzle puzzle)
     {
+        if (_daysToRun != null && !_daysToRun.IsEmpty() && !_daysToRun.Contains(puzzle.Day()))
+        {
+            Log.Debug("Skipping Puzzle: {Day}", puzzle.Day());
+            return;
+        }
+        
         if (_downloadInput)
             await PuzzleInputLoader.DownloadExampleInput(puzzle.Year(), puzzle.Day(),
                 $"input/{puzzle.Year()}/day{puzzle.Day()}.example.txt");
@@ -41,6 +54,13 @@ public class PuzzleSolver
         
         var inputsDirectory = new DirectoryInfo($@"input\\{puzzle.Year()}");
         var files = inputsDirectory.GetFiles($"day{puzzle.Day()}*.txt");
+
+        if (_inputsToRun != null && !_inputsToRun.IsEmpty())
+        {
+            files = files.ToList()
+                .FindAll(file => _inputsToRun.Any(input => file.Name.Contains(input)))
+                .ToArray();
+        }
 
         if (files.IsEmpty())
             return;

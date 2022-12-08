@@ -10,7 +10,7 @@ using Serilog.Exceptions;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.WithExceptionDetails()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Verbose()
     .WriteTo.Console()
     .CreateLogger();
 
