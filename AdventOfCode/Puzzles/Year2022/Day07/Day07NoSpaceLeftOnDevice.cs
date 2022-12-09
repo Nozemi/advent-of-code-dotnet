@@ -1,24 +1,20 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
-using AdventOfCode.Library.Extensions;
 using AdventOfCode.Library.Puzzle;
-using AdventOfCode.Library.Utilities;
-using AdventOfCode.Puzzles.Year2022.Day05;
-using Serilog;
 
 namespace AdventOfCode.Puzzles.Year2022.Day07;
 
+[Puzzle(Year = 2022, Day = 7)]
 public class Day07NoSpaceLeftOnDevice : Puzzle
 {
-    public override int Year() => 2022;
-
-    public override int Day() => 7;
-
-    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
+    public Day07NoSpaceLeftOnDevice() : base(
+        solutions: new[]
+        {
+            Solution("Part 1", Solve1),
+            Solution("Part 2", Solve2)
+        })
     {
-        { "Part 1", Solve1 },
-        { "Part 2", Solve2 }
-    };
+    }
 
     private static object Solve1(IEnumerable<string> input)
         => input.ParseInput().AllDirectories.FindAll(dir => dir.TotalSize() <= 100_000 && dir.TotalSize() > 0)
@@ -32,7 +28,7 @@ public class Day07NoSpaceLeftOnDevice : Puzzle
         var usedSpace = dataStructure.RootDirectory.TotalSize();
         var remainingSpace = totalDiskSpace - usedSpace;
         var needToDelete = neededFreeSpace - remainingSpace;
-        
+
         return dataStructure.AllDirectories.FindAll(dir => dir.TotalSize() >= needToDelete)
             .MinBy(dir => dir.TotalSize())!.TotalSize();
     }

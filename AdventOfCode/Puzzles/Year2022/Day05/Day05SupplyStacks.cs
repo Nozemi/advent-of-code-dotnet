@@ -6,19 +6,20 @@ using AdventOfCode.Library.Utilities;
 
 namespace AdventOfCode.Puzzles.Year2022.Day05;
 
+[Puzzle(Year = 2022, Day = 5)]
 public class Day05SupplyStacks : Puzzle
 {
+    public Day05SupplyStacks() : base(
+        solutions: new[]
+        {
+            Solution("Part 1", Solution1),
+            Solution("Part 2", Solution2)
+        })
+    {
+    }
+    
     private static object Solution1(IEnumerable<string> input) => input.ParseInput(Extensions.CraneMode.Single);
     private static object Solution2(IEnumerable<string> input) => input.ParseInput(Extensions.CraneMode.Multi);
-
-    public override int Year() => 2022;
-    public override int Day() => 5;
-
-    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
-    {
-        { "Part 1", Solution1 },
-        { "Part 2", Solution2 }
-    };
 }
 
 public class MoveCommand

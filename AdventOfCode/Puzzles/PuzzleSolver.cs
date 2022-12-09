@@ -1,4 +1,5 @@
-﻿using AdventOfCode.Library.Extensions;
+﻿using System.Reflection;
+using AdventOfCode.Library.Extensions;
 using AdventOfCode.Library.Puzzle;
 using AdventOfCode.Library.Utilities;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +10,7 @@ namespace AdventOfCode.Puzzles;
 
 public class PuzzleSolver
 {
-    private readonly List<IPuzzle> _puzzles;
+    private readonly List<Puzzle> _puzzles;
     private readonly bool _downloadInput;
     private readonly string _token;
     private readonly bool _downloadExampleInput;
@@ -18,7 +19,7 @@ public class PuzzleSolver
 
     public PuzzleSolver(IServiceProvider provider, IConfiguration configuration)
     {
-        _puzzles = provider.GetServices<IPuzzle>()
+        _puzzles = provider.GetServices<Puzzle>()
             .OrderBy(puzzle => puzzle.GetType().Name)
             .ToList();
 
@@ -33,27 +34,30 @@ public class PuzzleSolver
     public void FindAndSolvePuzzles()
         => _puzzles.ForEach(Callback);
 
-    private async void Callback(IPuzzle puzzle)
+    private async void Callback(Puzzle puzzle)
     {
-        if (_daysToRun != null && !_daysToRun.IsEmpty() && !_daysToRun.Contains(puzzle.Day()))
+        var attribute = puzzle.GetType().GetCustomAttribute<PuzzleAttribute>();
+        if (attribute == null) return;
+        
+        if (_daysToRun != null && !_daysToRun.IsEmpty() && !_daysToRun.Contains(attribute.Day))
         {
-            Log.Debug("Skipping Puzzle: {Day}", puzzle.Day());
+            Log.Debug("Skipping Puzzle: {Day}", attribute.Day);
             return;
         }
         
         if (_downloadInput)
-            await PuzzleInputLoader.DownloadExampleInput(puzzle.Year(), puzzle.Day(),
-                $"input/{puzzle.Year()}/day{puzzle.Day()}.example.txt");
+            await PuzzleInputLoader.DownloadExampleInput(attribute.Year, attribute.Day,
+                $"input/{attribute.Year}/day{attribute.Day}.example.txt");
         
         if (!string.IsNullOrEmpty(_token) && _downloadInput)
-            await PuzzleInputLoader.DownloadInput(puzzle.Year(), puzzle.Day(), _token,
-                $"input/{puzzle.Year()}/day{puzzle.Day()}.main.txt");
+            await PuzzleInputLoader.DownloadInput(attribute.Year, attribute.Day, _token,
+                $"input/{attribute.Year}/day{attribute.Day}.main.txt");
 
         var chars = "======================";
         for (var i = 0; i < puzzle.GetType().Name.Length; i++) chars += "=";
         
-        var inputsDirectory = new DirectoryInfo($@"input\\{puzzle.Year()}");
-        var files = inputsDirectory.GetFiles($"day{puzzle.Day()}*.txt");
+        var inputsDirectory = new DirectoryInfo($@"input\\{attribute.Year}");
+        var files = inputsDirectory.GetFiles($"day{attribute.Day}*.txt");
 
         if (_inputsToRun != null && !_inputsToRun.IsEmpty())
         {
@@ -73,7 +77,7 @@ public class PuzzleSolver
         foreach (var fileInfo in files)
         {
             Log.Information("-- Solutions using input file: {File}", fileInfo.Name);
-            foreach (var entry in puzzle.Solutions())
+            foreach (var entry in puzzle.Solutions)
                 Log.Information("   {Key}: {Value}", entry.Key, entry.Value(File.ReadLines(fileInfo.FullName)));
         }
     }

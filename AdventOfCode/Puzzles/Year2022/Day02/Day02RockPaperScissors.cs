@@ -1,12 +1,19 @@
-﻿using AdventOfCode.Library.Extensions;
-using AdventOfCode.Library.Puzzle;
+﻿using AdventOfCode.Library.Puzzle;
 
 namespace AdventOfCode.Puzzles.Year2022.Day02;
 
+[Puzzle(Year = 2022, Day = 2)]
 public class Day02RockPaperScissors : Puzzle
 {
-    //private static readonly string[] Strategies = { "A", "B", "C" };
-
+    public Day02RockPaperScissors() : base(
+        solutions: new[]
+        {
+            Solution("Part 1", Solution1),
+            Solution("Part 2", Solution2)
+        })
+    {
+    }
+    
     private static readonly Dictionary<string, int> ResultTranslations = new()
     {
         { "X", -1 },
@@ -112,13 +119,4 @@ public class Day02RockPaperScissors : Puzzle
 
         return score;
     }
-
-    public override int Year() => 2022;
-    public override int Day() => 2;
-
-    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
-    {
-        { "Part 1", Solution1 },
-        { "Part 2", Solution2 }
-    };
 }

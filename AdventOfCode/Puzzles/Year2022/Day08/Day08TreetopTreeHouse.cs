@@ -2,16 +2,17 @@
 
 namespace AdventOfCode.Puzzles.Year2022.Day08;
 
+[Puzzle(Year = 2022, Day = 8)]
 public class Day08TreetopTreeHouse : Puzzle
 {
-    public override int Year() => 2022;
-    public override int Day() => 8;
-
-    public override Dictionary<object, Func<IEnumerable<string>, object>> Solutions() => new()
+    public Day08TreetopTreeHouse() : base(
+        solutions: new[]
+        {
+            Solution("Part 1", Solve1),
+            Solution("Part 2", Solve2)
+        })
     {
-        { "Part 1", Solve1 },
-        { "Part 2", Solve2 }
-    };
+    }
 
     private static object Solve1(IEnumerable<string> input) => input.ToGrid().VisibleTrees().Count;
     private static object Solve2(IEnumerable<string> input) => input.ToGrid().FindScenicScores().Max();

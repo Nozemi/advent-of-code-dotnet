@@ -23,7 +23,7 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureContainer<ContainerBuilder>(container =>
     {
         container.RegisterType<PuzzleSolver>().SingleInstance();
-        container.RegisterAssemblyTypes(typeof(IPuzzle).Assembly).As<IPuzzle>().InstancePerLifetimeScope();
+        container.RegisterAssemblyTypes(typeof(Puzzle).Assembly).As<Puzzle>().InstancePerLifetimeScope();
     })
     .UseSerilog()
     .UseConsoleLifetime()
